@@ -201,7 +201,7 @@ GIFEncoder = function() {
 	
 	var download = exports.download = function download(filename) {
 		if(out===null || closeStream==false) {
-			console.log("Please call start method and add frames and call finish method before calling download"); 
+			console.log("Please call start method and add frames and call finish method before calling download");
 		} else {
 			filename= filename !== undefined ? ( filename.endsWith(".gif")? filename: filename+".gif" ): "download.gif";
 			var templink = document.createElement("a");
@@ -354,9 +354,24 @@ GIFEncoder = function() {
 		colorDepth = 8;
 		palSize = 7;
 
-		// get closest match to transparent color if specified
-		if (transparent !== null) {
+		// get all matches to transparent color if specified
+		if (transparent != null) {
 			transIndex = findClosest(transparent);
+
+			var r = colorTab[transIndex*3];
+			var g = colorTab[transIndex*3+1];
+			var b = colorTab[transIndex*3+2];
+			var trans_indices = [];
+			for (var i=0; i<colorTab.length; i+=3)
+			{
+				var index = Math.floor(i / 3);
+				if (!usedEntry[index]) continue;
+				if (colorTab[i] == r && colorTab[i+1] == g && colorTab[i+2] == b)
+					trans_indices.push(index);
+			}
+			for (var i=0; i<indexedPixels.length; i++)
+				if (trans_indices.indexOf(indexedPixels[i]) >= 0)
+					indexedPixels[i] = transIndex;
 		}
 	};
 
@@ -379,7 +394,7 @@ GIFEncoder = function() {
 			var dg = g - (colorTab[i++] & 0xff);
 			var db = b - (colorTab[i] & 0xff);
 			var d = dr * dr + dg * dg + db * db;
-			var index = i / 3;
+			var index = Math.floor(i / 3);
 			if (usedEntry[index] && (d < dmin)) {
 				dmin = d;
 				minpos = index;
